@@ -28,7 +28,9 @@ const config: Config = {
   duneApiKey: process.env.DUNE_API_KEY,
   duneApiUrl: 'https://api.dune.com/api/v1',
   duneQueryIds: {
-    platform_tvl_by_network: 6182048
+    platform_tvl_by_network: 6182048,
+    vesting_vaults: 6179993,
+    token_info: 6286041
   } as const,
   coingeckoApiUrl: 'https://api.coingecko.com/api/v3',
   supportedNetworks: [Network.ETHEREUM, Network.AVALANCHE_C_CHAIN] as const,

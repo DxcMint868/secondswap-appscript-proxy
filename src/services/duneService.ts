@@ -25,7 +25,7 @@ interface DuneResultResponse {
 /**
  * Execute Dune query and return execution ID
  */
-const executeQuery = async (queryId: number): Promise<string> => {
+const executeQuery = async (queryId: number, queryParameters: Record<string, string> = {}): Promise<string> => {
   const response = await fetch(`${config.duneApiUrl}/query/${queryId}/execute`, {
     headers: {
       "X-DUNE-API-KEY": config.duneApiKey!,
@@ -33,7 +33,7 @@ const executeQuery = async (queryId: number): Promise<string> => {
     },
     method: "POST",
     body: JSON.stringify({
-      query_parameters: {}
+      query_parameters: queryParameters
     }),
   });
 
@@ -122,4 +122,58 @@ export const extractNetworkTVL = (allNetworksData: unknown, network: Network): n
   } else {
     throw new Error(`Unknown data format: ${JSON.stringify(parsedData)}`);
   }
+};
+
+/**
+ * Fetch vesting vaults from Dune for a specific chain
+ * Returns vesting vault data for the specified chain
+ */
+export const fetchVestingVaults = async (chain: string): Promise<unknown> => {
+  if (!config.duneApiKey) {
+    throw new Error("DUNE_API_KEY is not defined in environment variables");
+  }
+
+  const duneQueryId = config.duneQueryIds.vesting_vaults;
+  if (!duneQueryId) {
+    throw new Error("Dune query ID (vesting_vaults) is not configured");
+  }
+
+  console.log(`Fetching vesting vaults from Dune API for chain: ${chain}...`);
+
+  // Step 1: Execute query with chain parameter
+  const executionId = await executeQuery(duneQueryId, { selected_chain: chain });
+  console.log(`Dune execution started: ${executionId}`);
+
+  // Step 2: Poll for results
+  const results = await pollForResults(executionId);
+  console.log('Vesting vaults data received from Dune');
+
+  return results;
+};
+
+/**
+ * Fetch token info from Dune for a specific chain
+ * Returns token data for the specified chain
+ */
+export const fetchTokenInfo = async (chain: string): Promise<unknown> => {
+  if (!config.duneApiKey) {
+    throw new Error("DUNE_API_KEY is not defined in environment variables");
+  }
+
+  const duneQueryId = config.duneQueryIds.token_info;
+  if (!duneQueryId) {
+    throw new Error("Dune query ID (token_info) is not configured");
+  }
+
+  console.log(`Fetching token info from Dune API for chain: ${chain}...`);
+
+  // Step 1: Execute query with chain parameter
+  const executionId = await executeQuery(duneQueryId, { selected_chain: chain });
+  console.log(`Dune execution started: ${executionId}`);
+
+  // Step 2: Poll for results
+  const results = await pollForResults(executionId);
+  console.log('Token info data received from Dune');
+
+  return results;
 };
